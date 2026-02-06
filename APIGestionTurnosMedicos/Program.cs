@@ -1,4 +1,18 @@
+using APIGestionTurnosMedicos.Helpers;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// AutoMapper
+ILoggerFactory loggerFactory = LoggerFactory.Create(builder => { });
+
+var configAutomapper = new AutoMapper.MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new AutoMapperConfiguration());
+}, loggerFactory);
+
+var mapper = configAutomapper.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
