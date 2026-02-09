@@ -16,8 +16,8 @@ namespace APIGestionTurnosMedicos
 
         public void CargarDatosPrueba()
         {
-            _userService.Create(new UserCreateDTO("admin1", "admin123", UserRole.ADMIN));
-            _userService.Create(new UserCreateDTO("user1", "user123", UserRole.USER));
+            _userService.Create(new UserCreateDTO("admin1", "admin123", "Admin"));
+            _userService.Create(new UserCreateDTO("user1", "user123", "User"));
         }
     }
 }

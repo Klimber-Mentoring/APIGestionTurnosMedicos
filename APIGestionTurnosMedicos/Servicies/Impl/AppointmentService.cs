@@ -1,4 +1,5 @@
-﻿using APIGestionTurnosMedicos.Models.DTOs;
+﻿using APIGestionTurnosMedicos.Middleware.Exceptions;
+using APIGestionTurnosMedicos.Models.DTOs;
 using APIGestionTurnosMedicos.Models.Entities;
 using APIGestionTurnosMedicos.Models.Repositories;
 using APIGestionTurnosMedicos.Models.Repositories.Impl;
@@ -9,85 +10,164 @@ using System.Numerics;
 
 namespace APIGestionTurnosMedicos.Servicies.Impl
 {
-    public class AppointmentService: IAppointmentService
+    public class AppointmentService : IAppointmentService
     {
         private readonly IMapper _mapper;
         private IAppointmentRepository _appointmentRepository { get; set; }
         private IUserRepository _userRepository { get; set; }
 
-        public AppointmentService(IMapper mapper, IAppointmentRepository appointmentRepository)
-        {
-            _appointmentRepository = appointmentRepository;
+        //private IDoctorRepository _doctorRepository { get; set; }
 
+        public AppointmentService(IMapper mapper, IAppointmentRepository appointmentRepository, /*IDoctorRepository doctorRepository,*/ IUserRepository userRepository)
+        {
+            _mapper = mapper;
+            _appointmentRepository = appointmentRepository;
+            // _doctorRepository = doctorRepository;
+            _userRepository = userRepository;
         }
 
-
-        private bool DiaValido(DateOnly dia)
+        private bool HoraValida(TimeOnly horaInicio)
+        {
+            if (horaInicio < new TimeOnly(8, 0) || horaInicio > new TimeOnly(18, 0))
+                return false;
+            return true;
+        }
+        private bool DiaHabil(DateOnly dia)
         {
             if ((dia.DayOfWeek == DayOfWeek.Saturday) || (dia.DayOfWeek == DayOfWeek.Sunday))
                 return false;
             return true;
         }
-
-        private bool DiaDisponible(DateOnly dia, TimeOnly horarioInicio)
+        private bool DiaFuturo(DateOnly dia, TimeOnly horaInicio)
         {
-            var appointments = _appointmentRepository.GetAll();
-            foreach(var appointment in appointments)
+            var horaActual = TimeOnly.FromDateTime(DateTime.Now);
+            var diaActual = DateOnly.FromDateTime(DateTime.Now);
+
+            if (dia == diaActual)
             {
-                if (appointment.DiaRepite(dia))
-                {
-                    return appointment.HoraDisponible(horarioInicio);
-                }
+                if (horaInicio > horaActual)
+                    return true;
             }
+
+            if (dia > diaActual)
+                return true;
+
             return false;
         }
 
-
-        public AppointmentDTO Create(AppointmentCreateDTO appointmentDTO, Guid userId)
+        private void ValidarDiayHora(DateOnly dia, TimeOnly horaInicio)
         {
-            var paciente = _userRepository.GetById(userId);
+            if (!HoraValida(horaInicio))
+            {
+                throw new BadRequestException("El horario debe estar entre 08:00 y 18:00");
+            }
+
+            if (!DiaHabil(dia))
+            {
+                throw new BadRequestException("El día debe ser hábil");
+            }
+
+            if (!DiaFuturo(dia, horaInicio))
+            {
+                throw new BadRequestException("Solo se pueden generar turnos futuros");
+            }
+
+            if (_appointmentRepository.ExisteAppointment(dia, horaInicio))
+            {
+                throw new BadRequestException("Ya existen turnos cargados en ese horario");
+            }
+
+        }
+
+
+        public AppointmentDTO Create(AppointmentCreateDTO appointmentDTO, string username)
+        {
+            var paciente = _userRepository.GetByUsername(username);
             if (paciente == null)
             {
-                throw new Exception("Paciente no encontrado");
+                throw new NotFoundException("Paciente no encontrado");
             }
 
-            var doctor = _doctorRepository.GetById(appointmentDTO.IdDoctor);
-            if (doctor == null)
-            {
-                throw new Exception("Doctor no encontrado");
-            }
+            //var doctor = _doctorRepository.GetById(appointmentDTO.IdDoctor);
+            //if (doctor == null)
+            //{
+            //    throw new NotFoundException("Doctor no encontrado");
+            //}
+            var doctor = new Doctor();
 
-            if (!DiaValido(appointmentDTO.Dia))
-            {
-                throw new Exception("El día no es válido");
-            }
+            ValidarDiayHora(appointmentDTO.Dia, appointmentDTO.HorarioInicio);
 
-            if (!DiaDisponible(appointmentDTO.Dia, appointmentDTO.HorarioInicio))
-            {
-                throw new Exception("Ya existen turnos cargados en ese horario");
-            }
+            var newAppointment = new Appointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio, paciente, doctor);
 
-            var newAppointment = _mapper.Map<Appointment>(appointmentDTO);
             _appointmentRepository.Add(newAppointment);
 
             return _mapper.Map<AppointmentDTO>(newAppointment);
         }
 
 
-        public void Delete(AppointmentDTO AppointmentDTO)
+        public void Delete(Guid id)
         {
-            // validar turno existente
-            // delete
+            if (id == null)
+                throw new BadRequestException("Debe ingresar un id");
+
+            var appointment = _appointmentRepository.GetById(id);
+            if (appointment == null)
+                throw new NotFoundException("El turno indicado no se ha encontrado");
+
+            _appointmentRepository.Delete(appointment);
+
         }
 
         public List<AppointmentDTO> GetAll()
         {
+            var appointments = _appointmentRepository.GetAll();
+
+            List<AppointmentDTO> notasDTO = new List<AppointmentDTO>();
+
+            foreach (Appointment appointment in appointments)
+            {
+                notasDTO.Add(_mapper.Map<AppointmentDTO>(appointment));
+            }
+            return (notasDTO.OrderBy(x => x.Dia).ToList());
 
         }
 
         public AppointmentDTO GetById(Guid id)
         {
+            var appointment = _appointmentRepository.GetById(id);
 
+            if (appointment == null)
+                throw new NotFoundException("El turno indicado no se ha encontrado");
+
+            return _mapper.Map<AppointmentDTO>(appointment);
+        }
+
+
+
+        public AppointmentDTO Update(Guid id, AppointmentUpdateDTO appointmentDTO)
+        {
+            var appointment = _appointmentRepository.GetById(id);
+
+            //validar nulo
+            if (appointment == null)
+                throw new NotFoundException("El turno indicado no se ha encontrado");
+
+            if (!DiaValido(appointmentDTO.Dia))
+            {
+                throw new BadRequestException("El día no es válido");
+            }
+
+            if (!_appointmentRepository.ExisteAppointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio, id))
+            {
+                throw new BadRequestException("Ya existen turnos cargados en ese horario");
+            }
+
+            appointment.HorarioInicio = appointmentDTO.HorarioInicio;
+            appointment.Dia = appointmentDTO.Dia;
+
+            _appointmentRepository.Update(appointment);
+
+            return _mapper.Map<AppointmentDTO>(appointment);
         }
 
     }

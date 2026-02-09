@@ -24,10 +24,10 @@
             return (Dia == dia);
         }
 
-        public bool HoraDisponible(TimeOnly inicio)
+        public bool HoraOcupada(TimeOnly inicio)
         {
             var fin = inicio.AddHours(1);
-            return ((!inicio.IsBetween(HorarioInicio, HorarioFin)) || (!fin.IsBetween(HorarioInicio, HorarioFin)));
+            return ((inicio.IsBetween(HorarioInicio, HorarioFin)) || (fin.IsBetween(HorarioInicio, HorarioFin)));
         }
         
     }

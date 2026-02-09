@@ -14,8 +14,6 @@ namespace APIGestionTurnosMedicos.Controllers
             _doctorService = doctorService;
         }
 
-        [HttpGet]
-
 
     }
 }

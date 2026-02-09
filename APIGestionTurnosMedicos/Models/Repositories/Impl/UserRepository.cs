@@ -16,14 +16,15 @@ namespace APIGestionTurnosMedicos.Models.Repositories.Impl
             Users.Add(user);
         }
 
-        public User GetById(Guid id)
+        public User GetByUsername(string username)
         {
             foreach (var user in Users)
             {
-                if (user.Id == id)
+                if (user.UserName == username)
                     return user;
             }
             return null;
         }
+
     }
 }
