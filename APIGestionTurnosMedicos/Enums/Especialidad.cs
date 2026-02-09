@@ -1,6 +1,7 @@
 ﻿namespace APIGestionTurnosMedicos.Enums
 {
-    public class Especialidad
+    public enum Especialidad
     {
+        CIRUGIA, CARDIOLOGIA, PEDIATRIA, GINECOLOGIA, NEUROLOGIA, ORTOPEDIA, DERMATOLOGIA, PSIQUIATRIA
     }
 }
