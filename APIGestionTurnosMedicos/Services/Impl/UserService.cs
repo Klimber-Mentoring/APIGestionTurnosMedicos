@@ -10,7 +10,7 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
     public class UserService: IUserService
     {
         private readonly IMapper _mapper;
-        private IUserRepository _userRepository {  get; set; }
+        private readonly IUserRepository _userRepository;
 
         public UserService(IMapper mapper, IUserRepository userRepository)
         {

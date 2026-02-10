@@ -7,16 +7,17 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Numerics;
+using System.Security.Cryptography;
 
 namespace APIGestionTurnosMedicos.Servicies.Impl
 {
     public class AppointmentService : IAppointmentService
     {
         private readonly IMapper _mapper;
-        private IAppointmentRepository _appointmentRepository { get; set; }
-        private IUserRepository _userRepository { get; set; }
+        private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IUserRepository _userRepository;
 
-        private IDoctorRepository _doctorRepository { get; set; }
+        private readonly IDoctorRepository _doctorRepository;
 
         public AppointmentService(IMapper mapper, IAppointmentRepository appointmentRepository, IDoctorRepository doctorRepository, IUserRepository userRepository)
         {
@@ -72,11 +73,6 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
                 throw new BadRequestException("Solo se pueden generar turnos futuros");
             }
 
-            if (_appointmentRepository.ExisteAppointment(dia, horaInicio))
-            {
-                throw new BadRequestException("Ya existen turnos cargados en ese horario");
-            }
-
         }
 
 
@@ -95,6 +91,11 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
             }
 
             ValidarDiayHora(appointmentDTO.Dia, appointmentDTO.HorarioInicio);
+
+            if (_appointmentRepository.ExisteAppointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio))
+            {
+                throw new BadRequestException("Ya existen turnos cargados en ese horario");
+            }
 
             var newAppointment = new Appointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio, paciente, doctor);
 
@@ -152,6 +153,11 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
                 throw new NotFoundException("El turno indicado no se ha encontrado");
 
             ValidarDiayHora(appointmentDTO.Dia, appointmentDTO.HorarioInicio);
+
+            if (_appointmentRepository.ExisteAppointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio, appointment.Id))
+            {
+                throw new BadRequestException("Ya existen turnos cargados en ese horario");
+            }
 
             appointment.HorarioInicio = appointmentDTO.HorarioInicio;
             appointment.Dia = appointmentDTO.Dia;

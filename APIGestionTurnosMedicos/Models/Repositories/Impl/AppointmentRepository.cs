@@ -59,9 +59,9 @@ namespace APIGestionTurnosMedicos.Models.Repositories.Impl
                 if (idExcluido.HasValue && idExcluido == appointment.Id)
                     continue;
 
-                if (appointment.DiaRepite(dia))
+                if (appointment.DiaRepite(dia) && appointment.HoraOcupada(horarioInicio))
                 {
-                    return appointment.HoraOcupada(horarioInicio);
+                    return true;
                 }
             }
             return false;

@@ -13,6 +13,7 @@
         public Appointment(DateOnly dia, TimeOnly horarioInicio, User paciente, Doctor doctor)
         {
             Id = Guid.NewGuid();
+            Dia = dia;
             HorarioInicio = horarioInicio;
             HorarioFin = horarioInicio.AddHours(1);
             Paciente = paciente;

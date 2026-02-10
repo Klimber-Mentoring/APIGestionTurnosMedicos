@@ -27,13 +27,13 @@ builder.Services.AddSingleton(mapper);
 builder.Services.AddSingleton<Inicializador>();
 
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
-builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddSingleton<IAppointmentRepository, AppointmentRepository>();
-builder.Services.AddSingleton<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 builder.Services.AddSingleton<IDoctorRepository, DoctorRepository>();
-builder.Services.AddSingleton<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
