@@ -1,13 +1,11 @@
-﻿using APIGestionTurnosMedicos.Enums;
-
-namespace APIGestionTurnosMedicos.Models.Entities
+﻿namespace APIGestionTurnosMedicos.Models.DTOs
 {
-    public class Doctor
+    public class DoctorDTO
     {
         public Guid Id { get; set; }
         public string Nombre { get; set; }
         public string Apellido { get; set; }
         public string Dni { get; set; }
-        public Especialidad Especialidad { get; set; }
+        public string Especialidad { get; set; }
     }
 }
