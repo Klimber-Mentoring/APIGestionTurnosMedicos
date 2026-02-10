@@ -21,6 +21,27 @@ namespace APIGestionTurnosMedicos.Controllers
         }
 
         /// <summary>
+        /// Carga un nuevo turno.
+        /// </summary>
+        /// <param name="appointment">Datos del turno que se quiere reservar</param>
+        /// <returns>Turno creado</returns>
+        /// <response code="201">El turno fue creado exitosamente</response>
+        /// <response code="400">Datos incorrectos en la solicitud</response>
+        /// 
+        [Authorize(Roles = "User")]
+
+        [HttpPost()]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Create(AppointmentCreateDTO appointment)
+        {
+            var username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var newAppointment = _appointmentService.Create(appointment, username);
+
+            return Created("", new { id = newAppointment.Id });
+        }
+
+        /// <summary>
         /// Devuelve todos los turnos realizados.
         /// </summary>
         /// <returns>Lista de turnos realizados</returns>
@@ -51,32 +72,10 @@ namespace APIGestionTurnosMedicos.Controllers
         }
 
         /// <summary>
-        /// Crea un nuevo turno.
-        /// </summary>
-        /// <param name="nota">Datos del turno que se quiere reservar</param>
-        /// <returns>Turno creado</returns>
-        /// <response code="201">El turno fue creado exitosamente</response>
-        /// <response code="400">Datos incorrectos en la solicitud</response>
-        /// 
-        [Authorize(Roles = "User")]
-
-        [HttpPost()]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create(AppointmentCreateDTO appointment)
-        {
-            var username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var newAppointment = _appointmentService.Create(appointment, username);
-
-            return Created("", new { id = newAppointment.Id });
-        }
-
-
-        /// <summary>
         /// Actualiza un turno existente.
         /// </summary>
         /// <param name="id">Identificador del turno a actualizar</param>
-        /// <param name="nota">Datos actualizados del turno</param>
+        /// <param name="appointment">Datos actualizados del turno</param>
         /// <response code="204">El turno se actualizó correctamente</response>
         /// <response code="404">No se encontró el turno a actualizar</response>
 
@@ -87,7 +86,7 @@ namespace APIGestionTurnosMedicos.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<AppointmentDTO> Update(Guid id, AppointmentUpdateDTO appointment)
         {
-            var updatedAppointment = _appointmentService.Update(Guid id, appointment);
+            var updatedAppointment = _appointmentService.Update(id, appointment);
 
             return updatedAppointment;
         }
@@ -97,7 +96,7 @@ namespace APIGestionTurnosMedicos.Controllers
         /// </summary>
         /// <param name="id">Identificador del turno a eliminar</param>
         /// <response code="204">El turno se eliminó correctamente</response>
-        /// <response code="404">No se encontró el turno a eliminar</response>
+        /// <response code="404">No se encontró un turno con el id correspondiente</response>
         [Authorize(Roles = "Admin")]
 
         [HttpDelete("{id}")]

@@ -16,13 +16,13 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
         private IAppointmentRepository _appointmentRepository { get; set; }
         private IUserRepository _userRepository { get; set; }
 
-        //private IDoctorRepository _doctorRepository { get; set; }
+        private IDoctorRepository _doctorRepository { get; set; }
 
-        public AppointmentService(IMapper mapper, IAppointmentRepository appointmentRepository, /*IDoctorRepository doctorRepository,*/ IUserRepository userRepository)
+        public AppointmentService(IMapper mapper, IAppointmentRepository appointmentRepository, IDoctorRepository doctorRepository, IUserRepository userRepository)
         {
             _mapper = mapper;
             _appointmentRepository = appointmentRepository;
-            // _doctorRepository = doctorRepository;
+             _doctorRepository = doctorRepository;
             _userRepository = userRepository;
         }
 
@@ -59,7 +59,7 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
         {
             if (!HoraValida(horaInicio))
             {
-                throw new BadRequestException("El horario debe estar entre 08:00 y 18:00");
+                throw new BadRequestException("El horario debe estar comprendido entre las 08:00 y 18:00");
             }
 
             if (!DiaHabil(dia))
@@ -88,12 +88,11 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
                 throw new NotFoundException("Paciente no encontrado");
             }
 
-            //var doctor = _doctorRepository.GetById(appointmentDTO.IdDoctor);
-            //if (doctor == null)
-            //{
-            //    throw new NotFoundException("Doctor no encontrado");
-            //}
-            var doctor = new Doctor();
+            var doctor = _doctorRepository.GetDoctor(appointmentDTO.IdDoctor);
+            if (doctor == null)
+            {
+                throw new NotFoundException("Doctor no encontrado");
+            }
 
             ValidarDiayHora(appointmentDTO.Dia, appointmentDTO.HorarioInicio);
 
@@ -122,13 +121,13 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
         {
             var appointments = _appointmentRepository.GetAll();
 
-            List<AppointmentDTO> notasDTO = new List<AppointmentDTO>();
+            List<AppointmentDTO> appointmentsDTO = new List<AppointmentDTO>();
 
             foreach (Appointment appointment in appointments)
             {
-                notasDTO.Add(_mapper.Map<AppointmentDTO>(appointment));
+                appointmentsDTO.Add(_mapper.Map<AppointmentDTO>(appointment));
             }
-            return (notasDTO.OrderBy(x => x.Dia).ToList());
+            return (appointmentsDTO.OrderBy(x => x.Dia).ToList());
 
         }
 
@@ -152,15 +151,7 @@ namespace APIGestionTurnosMedicos.Servicies.Impl
             if (appointment == null)
                 throw new NotFoundException("El turno indicado no se ha encontrado");
 
-            if (!DiaValido(appointmentDTO.Dia))
-            {
-                throw new BadRequestException("El día no es válido");
-            }
-
-            if (!_appointmentRepository.ExisteAppointment(appointmentDTO.Dia, appointmentDTO.HorarioInicio, id))
-            {
-                throw new BadRequestException("Ya existen turnos cargados en ese horario");
-            }
+            ValidarDiayHora(appointmentDTO.Dia, appointmentDTO.HorarioInicio);
 
             appointment.HorarioInicio = appointmentDTO.HorarioInicio;
             appointment.Dia = appointmentDTO.Dia;
