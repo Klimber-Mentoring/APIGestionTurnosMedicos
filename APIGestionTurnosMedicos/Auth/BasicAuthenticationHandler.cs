@@ -57,10 +57,11 @@ namespace APIGestionTurnosMedicos.Auth
             }
 
 
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, username),
-                new Claim(ClaimTypes.Role, usuario.Rol.ToString())  //repo
+                new Claim(ClaimTypes.Role, usuario.Rol)  //repo
             }; //List of attributes for the current user
 
 

@@ -20,8 +20,6 @@ namespace APIGestionTurnosMedicos.Helpers
             CreateMap<Appointment, AppointmentDTO>().ReverseMap();
             CreateMap<Appointment, AppointmentCreateDTO>().ReverseMap();
             CreateMap<Appointment, AppointmentUpdateDTO>().ReverseMap();
-
-
         }
 
     }
