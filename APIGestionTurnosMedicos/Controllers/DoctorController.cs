@@ -1,5 +1,6 @@
 ﻿using APIGestionTurnosMedicos.Models.DTOs;
 using APIGestionTurnosMedicos.Servicies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIGestionTurnosMedicos.Controllers
@@ -22,7 +23,10 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <returns>Doctor registrado</returns>
         /// <response code="201">El doctor fue registrado exitosamente</response>
         /// <response code="400">Datos incorrectos en la solicitud</response>
-        
+        /// <response code="401">Usuario no autenticado</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
+
+        [Authorize(Roles = ("Admin"))]
         [HttpPost]
         public IActionResult CreateDoctor([FromBody] DoctorDTO doctor)
         {
@@ -36,7 +40,10 @@ namespace APIGestionTurnosMedicos.Controllers
         /// </summary>
         /// <returns>Lista de doctores</returns>
         /// <response code="200">Devuelve lista de doctores</response>
-        
+        /// <response code="401">Usuario no autenticado</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
+
+        [Authorize(Roles = ("Admin"))]
         [HttpGet]
         public IActionResult GetDoctores()
         {
@@ -51,8 +58,11 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <param name="id">Identificador único de un doctor</param>
         /// <returns>Datos del doctor solicitado</returns>
         /// <response code="200">Devuelve el doctor solicitado</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró un doctor con el id correspondiente</response> 
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
+        [Authorize(Roles = ("Admin"))]
         [HttpGet("{id}")]
         public IActionResult GetDoctor(Guid id)
         {
@@ -67,8 +77,11 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <param name="id">Identificador del doctor a actualizar</param>
         /// <param name="doctor">Datos actualizados del doctor</param>
         /// <response code="204">Los datos del doctor se actualizaron correctamente</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró un doctor con el id correspondiente</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
+        [Authorize(Roles = ("Admin"))]
         [HttpPut("{id}")]  
         public IActionResult UpdateDoctor(Guid id, [FromBody] UpdateDoctorDTO doctor)
         {
@@ -82,8 +95,11 @@ namespace APIGestionTurnosMedicos.Controllers
         /// </summary>
         /// <param name="id">Identificador del doctor que se quiere eliminar</param>
         /// <response code="204">El doctor se eliminó correctamente</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró un doctor con el id correspondiente</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
+        [Authorize(Roles = ("Admin"))]
         [HttpDelete("{id}")]  
         public IActionResult DeleteDoctor(Guid id)
         {

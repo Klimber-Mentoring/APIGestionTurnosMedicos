@@ -27,12 +27,12 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <returns>Turno creado</returns>
         /// <response code="201">El turno fue creado exitosamente</response>
         /// <response code="400">Datos incorrectos en la solicitud</response>
-        /// 
-        [Authorize(Roles = "User")]
+        /// <response code="401">Usuario no autenticado</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
+        [Authorize(Roles = ("Admin, User"))]
         [HttpPost()]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         public IActionResult Create(AppointmentCreateDTO appointment)
         {
             var username = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,6 +46,8 @@ namespace APIGestionTurnosMedicos.Controllers
         /// </summary>
         /// <returns>Lista de turnos realizados</returns>
         /// <response code="200">Devuelve la lista de turnos</response>
+        /// <response code="401">Usuario no autenticado</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
         [Authorize(Roles = ("Admin"))]
         [HttpGet]
@@ -61,11 +63,12 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <param name="id">Identificador único de un turno</param>
         /// <returns>El turno solicitado</returns>
         /// <response code="200">Devuelve el turno encontrado</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró un turno con el id correspondiente</response> 
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public ActionResult<AppointmentDTO> Get(Guid id)
         {
             return _appointmentService.GetById(id);
@@ -77,13 +80,14 @@ namespace APIGestionTurnosMedicos.Controllers
         /// <param name="id">Identificador del turno a actualizar</param>
         /// <param name="appointment">Datos actualizados del turno</param>
         /// <response code="204">El turno se actualizó correctamente</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró el turno a actualizar</response>
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
         [Authorize(Roles = "Admin")]
 
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public ActionResult<AppointmentDTO> Update(Guid id, AppointmentUpdateDTO appointment)
         {
             var updatedAppointment = _appointmentService.Update(id, appointment);
@@ -96,12 +100,13 @@ namespace APIGestionTurnosMedicos.Controllers
         /// </summary>
         /// <param name="id">Identificador del turno a eliminar</param>
         /// <response code="204">El turno se eliminó correctamente</response>
+        /// <response code="401">Usuario no autenticado</response>
         /// <response code="404">No se encontró un turno con el id correspondiente</response>
-        [Authorize(Roles = "Admin")]
+        /// <response code="403">No tiene los permisos para realizar esta solicitud</response>
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public IActionResult Delete(Guid id)
         {
             _appointmentService.Delete(id);
